@@ -1,0 +1,9 @@
+results
+resources
+reports
+slurm
+logs
+benchmarks
+.vscode
+.Rhistory
+.DS_Store
