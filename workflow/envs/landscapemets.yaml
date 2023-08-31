@@ -1,0 +1,11 @@
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - r-base =4.2
+  - r-landscapemetrics =1.5.7
+  - r-codetools
+  - r-sf
+  - r-lme4
+  - r-dplyr
+  - r-mumin =1.47.5
