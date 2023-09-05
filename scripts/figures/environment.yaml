@@ -1,0 +1,12 @@
+name: r-plotting
+
+channels:
+  - conda-forge
+  - bioconda
+
+dependencies:
+  - r-base =4.2
+  - r-ggplot2
+  - r-ggeffects
+  - r-dplyr
+  - r-svglite
