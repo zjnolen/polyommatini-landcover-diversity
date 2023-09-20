@@ -41,6 +41,7 @@ rule downsample_doSaf:
         angsd -doSaf 1 -bam {output.sublist} -GL {params.gl_model} -ref {input.ref} \
             -nThreads {threads} {params.extra} -minMapQ {params.mapQ} \
             -minQ {params.baseQ} -sites {input.sites} -anc {input.ref} \
+            -rf <(cut -f1 {input.sites} | uniq | sed -e 's/$/:/') \
             -out {params.out}) &> {log}
         """
 
@@ -73,9 +74,9 @@ rule downsample_1dSFS:
         "benchmarks/{dataset}/realSFS/1dSFS/downsampled/{dataset}.{ref}_{population}.N{samplesize}-rep{rep}_{sites}-filts.log"
     params:
         fold=config["params"]["realsfs"]["fold"],
-    threads: 2
+    threads: lambda w, attempt: attempt * 2
     resources:
-        runtime="120m",
+        runtime=lambda w, attempt: attempt * 360,
     shell:
         """
         realSFS {input.saf} -fold {params.fold} -P {threads} \
@@ -126,9 +127,9 @@ rule downsample_2dSFS:
         ),
     params:
         fold=config["params"]["realsfs"]["fold"],
-    threads: 2
+    threads: lambda w, attempt: attempt * 2
     resources:
-        runtime="180m",
+        runtime=lambda w, attempt: attempt * 360,
     shell:
         """
         realSFS {input.saf1} {input.saf2} -fold {params.fold} \
@@ -165,8 +166,8 @@ rule downsample_saf2theta:
         out=lambda w, output: output.thetas.removesuffix(".thetas.gz"),
         fold=config["params"]["realsfs"]["fold"],
     resources:
-        runtime="120m",
-    threads: 2
+        runtime=lambda w, attempt: attempt * 360,
+    threads: lambda w, attempt: attempt * 2
     shell:
         """
         realSFS saf2theta {input.safidx} -sfs {input.sfs} -fold {params.fold} \
@@ -193,9 +194,9 @@ rule downsample_thetaStat:
         "logs/{dataset}/thetaStat/downsampled/{dataset}.{ref}_{population}.N{samplesize}-rep{rep}_{sites}-filts.{win}_{step}.log",
     params:
         out=lambda w, output: os.path.splitext(output.thetas)[0],
-    threads: 2
+    threads: lambda w, attempt: attempt * 2
     resources:
-        runtime="120m",
+        runtime=lambda w, attempt: attempt * 360,
     shell:
         """
         thetaStat do_stat {input.thetasidx} -win {wildcards.win} -type 0 \
@@ -207,7 +208,9 @@ rule average_downsampled_thetas:
     input:
         "results/datasets/{dataset}/analyses/thetas/downsampled/{dataset}.{ref}_{population}.N{samplesize}-rep{rep}_{sites}-filts.thetaWindows.{win}_{step}.pestPG",
     output:
-        "results/datasets/{dataset}/analyses/thetas/downsampled/{dataset}.{ref}_{population}.N{samplesize}-rep{rep}_{sites}-filts.thetaMean.{win}_{step}.tsv",
+        ensure(
+            "results/datasets/{dataset}/analyses/thetas/downsampled/{dataset}.{ref}_{population}.N{samplesize}-rep{rep}_{sites}-filts.thetaMean.{win}_{step}.tsv"
+        ),
     conda:
         "../envs/r.yaml"
     group:
@@ -234,6 +237,8 @@ rule aggregate_downsampled_thetas:
         "logs/{dataset}/thetaStat/aggregate/downsampled/{dataset}.{ref}_all.downsampled_{sites}-filts.thetaMean.{win}_{step}.log",
     conda:
         "../envs/shell.yaml"
+    resources:
+        runtime=lambda w, attempt: attempt * 360,
     shell:
         """
         (printf "pop\tdownsample.n\tdownsample.rep\tpi\twatterson\ttajima\n" > {output}
@@ -260,22 +265,28 @@ use rule realSFS_fst_index from angsd as downsample_fst_index with:
         fstidx=temp(
             "results/datasets/{dataset}/analyses/fst/downsampled/{dataset}.{ref}_{population1}-{population2}.N{samplesize}-rep{rep}_{sites}-filts.fst.idx"
         ),
+        fstgz=temp(
+            "results/datasets/{dataset}/analyses/fst/downsampled/{dataset}.{ref}_{population1}-{population2}.N{samplesize}-rep{rep}_{sites}-filts.fst.gz"
+        ),
     group:
         "fst"
     log:
         "logs/{dataset}/realSFS/fst/index/downsampled/{dataset}.{ref}_{population1}-{population2}.N{samplesize}-rep{rep}_{sites}-filts.log",
     benchmark:
         "benchmarks/{dataset}/realSFS/fst/index/downsampled/{dataset}.{ref}_{population1}-{population2}.N{samplesize}-rep{rep}_{sites}-filts.log"
-    threads: 2
+    threads: lambda w, attempt: attempt * 2
     resources:
-        runtime="120m",
+        runtime=lambda w, attempt: attempt * 360,
 
 
 rule downsample_fst_stats:
     input:
         fstidx="results/datasets/{dataset}/analyses/fst/downsampled/{dataset}.{ref}_{population1}-{population2}.N{samplesize}-rep{rep}_{sites}-filts.fst.idx",
+        fstgz="results/datasets/{dataset}/analyses/fst/downsampled/{dataset}.{ref}_{population1}-{population2}.N{samplesize}-rep{rep}_{sites}-filts.fst.gz",
     output:
-        fstglob="results/datasets/{dataset}/analyses/fst/downsampled/{dataset}.{ref}_{population1}-{population2}.N{samplesize}-rep{rep}_{sites}-filts.fst.global.tsv",
+        fstglob=ensure(
+            "results/datasets/{dataset}/analyses/fst/downsampled/{dataset}.{ref}_{population1}-{population2}.N{samplesize}-rep{rep}_{sites}-filts.fst.global.tsv"
+        ),
     container:
         angsd.angsd_container
     group:
@@ -284,9 +295,9 @@ rule downsample_fst_stats:
         "logs/{dataset}/realSFS/fst/stats/downsampled/{dataset}.{ref}_{population1}-{population2}.N{samplesize}-rep{rep}_{sites}-filts.log",
     benchmark:
         "benchmarks/{dataset}/realSFS/fst/stats/downsampled/{dataset}.{ref}_{population1}-{population2}.N{samplesize}-rep{rep}_{sites}-filts.log"
-    threads: 2
+    threads: lambda w, attempt: attempt * 2
     resources:
-        runtime="60m",
+        runtime=lambda w, attempt: attempt * 360,
     params:
         full_n1=lambda w: len(angsd.get_samples_from_pop(w.population1)),
         full_n2=lambda w: len(angsd.get_samples_from_pop(w.population2)),
@@ -329,6 +340,8 @@ rule aggregate_downsample_fst:
         "benchmarks/{dataset}/realSFS/fst/aggregate/downsampled/{dataset}.{ref}_poppairs_{sites}-filts.global.log"
     conda:
         "../envs/shell.yaml"
+    resources:
+        runtime=lambda w, attempt: attempt * 360,
     shell:
         """
         (printf "pop1\tpop2\tunweight.fst\tweight.fst\tdownsample.n\tdownsample.rep\tpop1.full.samplesize\tpop2.full.samplesize\n" > {output}

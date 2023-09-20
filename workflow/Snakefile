@@ -6,7 +6,7 @@ min_version("7.25")
 include: "rules/0.0_angsd_pipeline.smk"
 include: "rules/0.1_intergenic_bed.smk"
 include: "rules/2.0_landscape_modeling.smk"
-include: "rules/4.0_permutation_tests.smk"
+include: "rules/4.0_downsampling.smk"
 
 
 angsd
