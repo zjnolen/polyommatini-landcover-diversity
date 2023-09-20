@@ -10,3 +10,5 @@ dependencies:
   - r-ggeffects
   - r-dplyr
   - r-svglite
+  - r-ggtext
+  - r-ggridges
