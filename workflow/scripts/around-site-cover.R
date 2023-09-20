@@ -4,11 +4,12 @@ library(landscapemetrics)
 library(raster)
 library(sf)
 
-snakemake@input[["raster"]]
-
+# read in land use raster and field site coordinates
 land_raster <- raster(snakemake@input[["raster"]])
 field_sites <- read.table(snakemake@input[["sites"]], header = TRUE, sep = "\t")
 outfile <- snakemake@output[["tsv"]]
+
+# set codes for each land use type from raster
 grass_codes <- c(42)
 arable_codes <- c(3)
 forest_codes <- c(
@@ -16,10 +17,12 @@ forest_codes <- c(
 )
 water_codes <- c(61, 62)
 
-
+# define radii to estimate land use within
 buffer_radius <- c(
   100, 500, 1000, 1500, 2000, 3000, 4000, 5000, 6000, 8000, 10000, 15000, 20000
 )
+
+# convert field site coordinates to spatial object
 sites_sp <- as_Spatial(
   st_as_sf(
     field_sites,
@@ -30,6 +33,7 @@ sites_sp <- as_Spatial(
 
 df <- data.frame()
 
+# calculate proportion of each land use type within the defined radii
 for (r in buffer_radius) {
   classmets_df <- sample_lsm(
     landscape = land_raster,
@@ -58,6 +62,7 @@ colnames(df) <- c(
   "site", "radius", "arable", "grassland", "forest", "water", "other"
 )
 
+# write table to file
 write.table(
   df,
   file = outfile,
