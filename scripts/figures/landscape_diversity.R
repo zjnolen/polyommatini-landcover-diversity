@@ -1,4 +1,5 @@
 library(ggplot2)
+library(reshape2)
 library(dplyr)
 
 setwd("~/working/bioinfo/projects/landuse-manuscript")
@@ -43,22 +44,21 @@ results <- results %>%
 
 ggplot(
   data = results,
-  aes(x = radius, y = landuse, col = neg, size = r2m, alpha = sig,
+  aes(x = radius, y = landuse, col = neg, size = r2m,
     label = round(deltaAIC, 2))) +
-  geom_point() +
+  geom_point(alpha = ifelse(results$deltaAIC == 0, 0.9, 0.5)) +
   geom_point(stroke = ifelse(results$deltaAIC < 2, 1, 0), shape = 1, col = ifelse(results$deltaAIC == 0, "black", "grey40"), alpha = 1) +
-  # geom_text(color = "black", alpha = 1, size = 2, vjust = -2, fontface = ifelse(results$deltaAIC < 2, 2, 1)) +
   facet_grid(rows = vars(species), switch = "y") +
   scale_color_gradientn(colors = rev(c("#15607A", "#A63716"))) +
-  scale_alpha_manual(values = c(0.5, 0.9)) +
   scale_y_discrete(position = "right") +
-  # geom_text(color = "black", alpha = 1, size = 2, vjust = -2, fontface = ifelse(results$deltaAIC < 2, 2, 1)) +
   theme_bw() +
   theme(
     axis.text.y = element_text(angle = 0),
     axis.text.x = element_text(angle = 45, hjust = 1),
     axis.title.y = element_blank(),
-    strip.text = element_text(face = "italic")
+    strip.text = element_text(face = "italic"),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
   ) +
   guides(
     color = "none",
@@ -70,3 +70,32 @@ ggplot(
   xlab("Radius [m]")
 
 ggsave("results/figures/landscape_diversity.svg", width = 5, height = 5)
+
+landuse <- read.table("results/landscape/around_site_cover.tsv", header = TRUE)
+
+correlations <- c()
+
+for (r in unique(landuse$radius)) {
+  radius <- landuse[landuse$radius == r, ]
+  grassarable <- cor(radius$grassland, radius$arable, method = "pearson")
+  grassforest <- cor(radius$grassland, radius$forest, method = "pearson")
+  arableforest <- cor(radius$arable, radius$forest, method = "pearson")
+  watergrass <- cor(radius$water, radius$grass, method = "pearson")
+  waterforest <- cor(radius$water, radius$forest, method = "pearson")
+  waterarable <- cor(radius$water, radius$arable, method = "pearson")
+  row <- data.frame(r, grassarable, grassforest, arableforest, watergrass, waterforest, waterarable)
+  correlations <- rbind(row, correlations)
+}
+
+correlations <- melt(correlations, id = "r")
+correlations$variable <- factor(correlations$variable, levels = c("grassarable","grassforest","arableforest","watergrass","waterforest","waterarable"), labels = c("Grass:Arable", "Grass:Forest", "Arable:Forest", "Water:Grass","Water:Forest","Water:Arable"))
+
+ggplot(correlations, aes(x = r, y = value, shape = variable, linetype = variable)) +
+  geom_point() +
+  geom_line() +
+  geom_hline(yintercept = 0) +
+  ylab("Pearson correlation, r") +
+  xlab("Radius (m)")
+
+
+ggsave("results/figures/landscape_correlation.svg", width = 6, height = 5)
