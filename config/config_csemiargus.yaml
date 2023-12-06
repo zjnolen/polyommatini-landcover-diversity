@@ -1,0 +1,132 @@
+# Project specific Config
+
+landuse-raster: "resources/gis/nmd2018bas_ogeneraliserad_v1_1.tif"
+field-sites: "resources/gis/polyommatini_land-use_sampling.tsv"
+downsample_sizes: [2,3,4,5,6,7,8]
+downsample_reps: [100]
+downsample:
+  fst: false
+  thetas: false
+recrate: 2.76e-8
+
+# ANGSD Snakemake Pipeline Config
+
+#=====================Dataset Configuration============================#
+
+samples: config/samples_csemiargus.tsv
+
+units: config/units.tsv
+
+dataset: "landuse-csemiargus"
+
+#===================== Reference Configuration ========================#
+
+chunk_size: 30000000
+
+reference:
+  name: "ilCyaSemi1.1"
+  fasta: "resources/ref/GCA_905187585.1_ilCyaSemi1.1_genomic.fna"
+  mito: ["mitochondrion"]
+  sex-linked: ["Z"]
+  exclude: []
+  min_size: 1000000
+
+#===================== Sample Set Configuration =======================#
+
+exclude_ind: []
+
+excl_pca-admix: ["MZLU107455", "CYSE0471", "CYSE0225", "CYSE0078", "MZLU107501", "CYSE0227", "CYSE0199"]
+
+#==================== Downsampling Configuration ======================#
+
+downsample_cov:
+
+#====================== Analysis Selection ============================#
+
+populations: []
+
+analyses:
+  # filtering
+  genmap: true
+  repeatmasker:
+    local_lib: "resources/repeatlibs/GCA_905187585.1.repeatmodeler.fa"
+    dfam_lib:
+    build_lib:
+  extreme_depth: [0.5,1.5]
+  dataset_missing_data: 0.8
+  population_missing_data: 0.8
+  # quality control
+  qualimap: true
+  damageprofiler: false
+  # population genomic analyses
+  estimate_ld: false
+  ld_decay: true
+  pca_pcangsd: true
+  admix_ngsadmix: true
+  relatedness: 
+    ngsrelate: false
+    waples2019: false
+  thetas_angsd: true
+  heterozygosity_angsd: true
+  fst_angsd:
+    populations: true
+    individuals: false
+  inbreeding_ngsf-hmm: false
+  ibs_matrix: false
+
+#=========================== Filter Sets ==============================#
+
+filter_beds:
+  intergenic: #"results/datasets/{dataset}/filters/intergenic/{ref}_intergenic.bed"
+
+only_filter_beds: false
+
+#===================== Software Configuration =========================#
+
+mapQ: 30
+baseQ: 30
+
+params:
+  genmap:
+    K: "100"
+    E: "2"
+    map_thresh: 1
+  fastp:
+    extra: "-p -g --overlap_len_require 15"
+  picard:
+    MarkDuplicates: "--REMOVE_DUPLICATES true --OPTICAL_DUPLICATE_PIXEL_DISTANCE 2500"
+  angsd:
+    gl_model: 2 # gl_model - 1=SAMtools, 2=GATK, 3=SOAPsnp, 4=SYK
+    maxdepth: 1000
+    extra: ""
+    snp_pval: "1e-6"
+    min_maf: 0.05
+  ngsld:
+    max_kb_dist_est-ld: 4000
+    max_kb_dist_decay: 100
+    max_kb_dist_pruning: 50
+    rnd_sample_est-ld: 0.001
+    rnd_sample_decay: 0.001
+    fit_LDdecay_extra: "--fit_level 100 --fit_boot 100 --plot_size 3,6 --plot_data --plot_no_legend --plot_y_lim 0.5"
+    fit_LDdecay_n_correction: true
+    pruning_min-weight: 0.1
+  realsfs:
+    fold: 1 # Should only be set to 1 for now
+    sfsboot: 100
+  fst:
+    whichFst: 1
+    win_size: 50000
+    win_step: 10000
+  thetas:
+    win_size: 50000
+    win_step: 10000
+    minsites: 1000
+  ngsadmix:
+    kvalues: [1,2,3,4,5,6,7,8,9]
+    reps: 100
+    minreps: 20
+    thresh:
+    conv:
+    extra: "-maxiter 4000"
+  ibs:
+    doibs: 2
