@@ -256,11 +256,11 @@ rule bcf_filter:
         "../envs/bcftools.yaml"
     log:
         "logs/{dataset}/bcftools/filter/{dataset}.{ref}_{population}_chunk{chunk}_{sites}-filts.log",
-    params:
-        filter="-i'QUAL > 29 & FMT/DP>9 & FMT/GQ>29'",
     shell:
         """
-        bcftools filter {params.filter} -Oz -o {output} {input} 2> {log}
+        bcftools filter -e'QUAL<30' -Ou | bcftools +setGT -Ou -- -t q -n . \
+            -i'FMT/DP<10 | FMT/GQ<30' | bcftools +fill-tags -Ou -- -t all | \
+            bcftools filter -i 'F_MISSING<0.5' -Oz -o {output} 2> {log}
         """
 
 
