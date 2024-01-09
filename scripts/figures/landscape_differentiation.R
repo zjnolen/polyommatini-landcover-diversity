@@ -1,8 +1,13 @@
+# This script plots the results for the models of genetic differentiation ~ distance + land use
+
 library(ggplot2)
 library(stringr)
 library(dplyr)
 
 setwd("~/working/bioinfo/projects/landuse-manuscript")
+
+# Read in results from models for all three species and compile them into a
+# results object
 
 picarus <- read.table("results/datasets/landuse-picarus/analyses/landscape_models/landuse-picarus.ilPolIcar1.1_all_allsites-filts_fst-landuse.tsv", header = TRUE)
 pargus <- read.table("results/datasets/landuse-pargus/analyses/landscape_models/landuse-pargus.ilPleArgu1.3_all_allsites-filts_fst-landuse.tsv", header = TRUE)
@@ -31,13 +36,14 @@ results$species <- factor(
   levels = c("picarus", "pargus", "csemiargus"),
   labels = c("P. icarus", "P. argus", "C. semiargus")
 )
-results$sig <- as.factor(with(results, ifelse(p.val < 0.05, 1, 0)))
+
+# Generate helper columns that have direction of relationship and delta AIC
 results$neg <- as.numeric(with(results, ifelse(t.val < 0, -1, 1)))
-results$r2sign <- as.numeric(results$r2m * results$neg)
 results <- results %>%
   group_by(dataset) %>%
   mutate(deltaAIC = aic - min(aic))
 
+# Plot land use relationships with genetic differentaiton per species
 
 ggplot(
   data = results,
@@ -84,10 +90,14 @@ labs(
   size = "Marginal R2"
 )
 
+# This portion plots the isolation by distance plots of the three species
+
 library(lmerMultiMember)
 library(ggeffects)
 library(MuMIn)
 library(ggplot2)
+
+# Read in FST estimates and compile them into an object fstall
 
 picarus <- read.table("results/datasets/landuse-picarus/analyses/fst/landuse-picarus.ilPolIcar1.1_poppairs_allsites-filts.fst.global.tsv", header = TRUE)
 pargus <- read.table("results/datasets/landuse-pargus/analyses/fst/landuse-pargus.ilPleArgu1.3_poppairs_allsites-filts.fst.global.tsv", header = TRUE)
@@ -100,21 +110,32 @@ csemiargus$species <- "csemiargus"
 
 fstall <- rbind(picarus, pargus, csemiargus)
 
+
+# Set FST values < 0 to 0
+
 fstall$weight.fst <- ifelse(fstall$weight.fst < 0, 0, fstall$weight.fst)
 
+# Read in table with distances betweeen sampling sites for all species and
+# compile into landscapes object
 picaruslandscapes <- data.frame(read.table("results/landscape/landuse-picarus_between_site_cover.tsv", sep = "\t", header = TRUE))
 parguslandscapes <- data.frame(read.table("results/landscape/landuse-pargus_between_site_cover.tsv", sep = "\t", header = TRUE))
 csemiarguslandscapes <- data.frame(read.table("results/landscape/landuse-csemiargus_between_site_cover.tsv", sep = "\t", header = TRUE))
 
 landscapes <- rbind(picaruslandscapes, parguslandscapes, csemiarguslandscapes)
 
+# Generate population combination variable to merge distances and fst tables
 landscapes$combname <- ifelse(landscapes$pop1 < landscapes$pop2, paste0(landscapes$pop1," - ",landscapes$pop2),paste0(landscapes$pop2," - ",landscapes$pop1))
 
 fstall$combname <- ifelse(fstall$pop1 < fstall$pop2, paste0(fstall$pop1," - ",fstall$pop2),paste0(fstall$pop2," - ",fstall$pop1))
 
+
+# Merge fst and distance tables by population pair
 fstlands <- merge(fstall,landscapes, by="combname")
 
 
+# Generate a predictive model of isolation by distance to plot that matches
+# the one tested in the manuscript (i.e. with a population pair membership
+# random effect)
 pred <- c()
 stats <- c()
 fst <- fstlands
@@ -132,11 +153,13 @@ for (s in species) {
   pred <- rbind(pred,pr)
 }
 
+# Calculate stats to write onto plots - slope and R2m
 stats <- data.frame(stats)
 colnames(stats) <- c("species", "slope", "r2m")
 pred$x <- pred$x / 1000
 fst$distance <- fst$distance/1000
 
+# Set variable types for nice plotting
 pred$species <- factor(pred$species, levels = c("picarus","pargus","csemiargus"), labels = c("P. icarus", "P. argus", "C. semiargus"))
 fst$species <- factor(fst$species, levels = c("picarus","pargus","csemiargus"), labels = c("P. icarus", "P. argus", "C. semiargus"))
 stats$species <- factor(stats$species, levels = c("picarus","pargus","csemiargus"), labels = c("P. icarus", "P. argus", "C. semiargus"))
@@ -144,6 +167,7 @@ stats$slope <- as.numeric(stats$slope)
 stats$r2m <- as.numeric(stats$r2m)
 stats$r2m <- round(stats$r2m, digits = 3)
 
+# Plot isolation by distance for the three species together
 IsoByDist <- ggplot(pred,aes(x,predicted))+
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high),
               fill = "grey60",
