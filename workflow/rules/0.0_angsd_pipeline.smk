@@ -1,6 +1,8 @@
 module angsd:
     snakefile:
-        "https://raw.githubusercontent.com/zjnolen/angsd-snakemake-pipeline/13c5c8a0127180b1e36c99746650c2bbe7b25fc8/workflow/Snakefile"
+        github(
+            "zjnolen/angsd-snakemake-pipeline", path="workflow/Snakefile", tag="v0.2.0"
+        )
     config:
         config
 
