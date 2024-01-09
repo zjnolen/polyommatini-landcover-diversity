@@ -4,6 +4,8 @@ library(dplyr)
 
 setwd("~/working/bioinfo/projects/landuse-manuscript")
 
+# Read in results from heterozygosity ~ land use models for all species
+
 picarus <- read.table("results/datasets/landuse-picarus/analyses/landscape_models/landuse-picarus.ilPolIcar1.1_all_allsites-filts_heterozygosity-landuse.tsv", header = TRUE)
 pargus <- read.table("results/datasets/landuse-pargus/analyses/landscape_models/landuse-pargus.ilPleArgu1.3_all_allsites-filts_heterozygosity-landuse.tsv", header = TRUE)
 csemiargus <- read.table("results/datasets/landuse-csemiargus/analyses/landscape_models/landuse-csemiargus.ilCyaSemi1.1_all_allsites-filts_heterozygosity-landuse.tsv", header = TRUE)
@@ -11,6 +13,9 @@ csemiargus <- read.table("results/datasets/landuse-csemiargus/analyses/landscape
 picarus$species <- "picarus"
 pargus$species <- "pargus"
 csemiargus$species <- "csemiargus"
+
+# Create a results object with results from all species. Set all columns to
+# appropriate types
 
 results <- rbind(picarus, pargus, csemiargus)
 
@@ -35,12 +40,14 @@ results$species <- factor(
   levels = c("picarus", "pargus", "csemiargus"),
   labels = c("P. icarus", "P. argus", "C. semiargus")
 )
-results$sig <- as.factor(with(results, ifelse(p.val < 0.05, 1, 0)))
+
+# Set helper columns for direction of relationship and delta AIC
 results$neg <- as.numeric(with(results, ifelse(t.val < 0, -1, 1)))
-results$r2sign <- as.numeric(results$r2m * results$neg)
 results <- results %>%
   group_by(radius, species) %>%
   mutate(deltaAIC = aic - min(aic))
+
+# Plot results from landscape models
 
 ggplot(
   data = results,
@@ -71,6 +78,8 @@ ggplot(
 
 ggsave("results/figures/landscape_diversity.svg", width = 5, height = 5)
 
+# Assess correlations between land use variables at multiple scales
+
 landuse <- read.table("results/landscape/around_site_cover.tsv", header = TRUE)
 
 correlations <- c()
@@ -89,6 +98,8 @@ for (r in unique(landuse$radius)) {
 
 correlations <- melt(correlations, id = "r")
 correlations$variable <- factor(correlations$variable, levels = c("grassarable","grassforest","arableforest","watergrass","waterforest","waterarable"), labels = c("Grass:Arable", "Grass:Forest", "Arable:Forest", "Water:Grass","Water:Forest","Water:Arable"))
+
+# Plot correlations
 
 ggplot(correlations, aes(x = r, y = value, shape = variable, linetype = variable)) +
   geom_point() +
