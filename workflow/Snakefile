@@ -1,24 +1,35 @@
 from snakemake.utils import min_version
+import math
 
 min_version("7.25")
 
 
 include: "rules/0.0_angsd_pipeline.smk"
-include: "rules/0.1_intergenic_bed.smk"
-include: "rules/2.0_landscape_modeling.smk"
-include: "rules/4.0_downsampling.smk"
+include: "rules/1.0_landscape_modeling.smk"
+include: "rules/2.0_downsampling.smk"
+include: "rules/3.0_bcftools_roh.smk"
 
-
-angsd
 
 all_outputs = []
 
+all_outputs.extend(
+    [
+        "results/datasets/{dataset}/analyses/landscape_models/{dataset}.{ref}_all_{sites}-filts_heterozygosity-landuse.tsv",
+        "results/datasets/{dataset}/analyses/landscape_models/{dataset}.{ref}_all_{sites}-filts_fst-landuse.tsv",
+        "results/datasets/{dataset}/analyses/roh/bcftools/{dataset}.{ref}_all_{sites}-filts.regs.GLonly.roh",
+        "results/datasets/{dataset}/analyses/roh/bcftools/{dataset}.{ref}_all_{sites}-filts.regs.calls.roh",
+    ]
+)
+
 if config["downsample"]["fst"]:
-    all_outputs.append("results/datasets/{dataset}/analyses/fst/downsampled/{dataset}.{ref}_poppairs.downsampled_{sites}-filts.fst.global.tsv")
+    all_outputs.append(
+        "results/datasets/{dataset}/analyses/fst/downsampled/{dataset}.{ref}_poppairs.downsampled_{sites}-filts.fst.global.tsv"
+    )
 
 if config["downsample"]["thetas"]:
-    all_outputs.append("results/datasets/{dataset}/analyses/thetas/downsampled/{dataset}.{ref}_all.downsampled_{sites}-filts.thetaMean.{win}_{step}.tsv")
-
+    all_outputs.append(
+        "results/datasets/{dataset}/analyses/thetas/downsampled/{dataset}.{ref}_all.downsampled_{sites}-filts.thetaMean.{win}_{step}.tsv"
+    )
 
 
 rule all:

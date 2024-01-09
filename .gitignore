@@ -4,6 +4,8 @@ reports
 slurm
 logs
 benchmarks
+slurm-*
+.old_files
 .vscode
 .Rhistory
 .DS_Store
