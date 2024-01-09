@@ -7,8 +7,8 @@ setwd("~/working/bioinfo/projects/landuse-manuscript")
 # Set species to run for
 
 #species <- "picarus"
-#species <- "pargus"
-species <- "csemiargus"
+species <- "pargus"
+# species <- "csemiargus"
 
 if (species == "picarus") {
   qopt <- readQ("results/datasets/landuse-picarus/analyses/ngsadmix/landuse-picarus.ilPolIcar1.1_all_excl_pca-admix_allsites-filts_K2.qopt", filetype="basic")
@@ -18,11 +18,11 @@ if (species == "picarus") {
   cols <- c("#254f6e","#fecd03")
   sorting <- "Cluster2"
 } else if (species == "pargus") {
-  qopt <- readQ("results/datasets/landuse-pargus/analyses/ngsadmix/landuse-pargus.ilPleArgu1.3_all_allsites-filts_K3.qopt", filetype="basic")
-  pop <- read.table("results/datasets/landuse-pargus/poplists/landuse-pargus_all.indiv.list", header = TRUE)
+  qopt <- readQ("results/datasets/landuse-pargus/analyses/ngsadmix/landuse-pargus.ilPleArgu1.3_all_excl_pca-admix_allsites-filts_K3.qopt", filetype="basic")
+  pop <- read.table("results/datasets/landuse-pargus/poplists/landuse-pargus_all_excl_pca-admix.indiv.list", header = TRUE)
   popord <- c("Falsterbo", "Drakamollan", "Gotafors", "Aspo", "Branthalla", 
               "Gosslunda", "Jordtorpasen")
-  cols <- c("#98AE6E","#fecd03","#254f6e")
+  cols <- c("#254f6e","#fecd03","#98AE6E")
   sorting <- "all"
 } else if (species == "csemiargus") {
   qopt <- readQ("results/datasets/landuse-csemiargus/analyses/ngsadmix/landuse-csemiargus.ilCyaSemi1.1_all_excl_pca-admix_allsites-filts_K6.qopt", filetype="basic")
