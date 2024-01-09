@@ -18,7 +18,7 @@ forest_codes <- c(
 water_codes <- c(61, 62)
 
 # generate all combinations of field sites
-combos <- combn(field_sites$Site.name, 2)
+combos <- combn(snakemake@params[["pops"]], 2)
 
 sites_sf <- st_as_sf(
   field_sites, coords = c("SWEREF99.E","SWEREF99.N"), crs = "EPSG:3006"
