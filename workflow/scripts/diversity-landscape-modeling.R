@@ -17,15 +17,15 @@ dataset <- snakemake@wildcards[["dataset"]]
 
 # define buffer radii around sample sites
 buffer_radius <- c(
-  100, 500, 1000, 1500, 2000, 3000, 4000, 5000, 6000, 8000, 10000, 15000, 20000
+  500, 1000, 1500, 2000, 3000, 4000, 5000, 6000, 8000, 10000, 15000, 20000
 )
 
 # generate additional land use combination proportions
 hz$dataset <- snakemake@wildcards[["dataset"]]
 colnames(hz) <- c("sample", "site", "heterozygosity", "dataset")
-land_cover$grassland_forest <- land_cover$grassland + land_cover$forest
-land_cover$arable_grassland <- land_cover$arable + land_cover$grassland
-land_cover$arable_forest <- land_cover$arable + land_cover$forest
+# land_cover$grassland_forest <- land_cover$grassland + land_cover$forest
+# land_cover$arable_grassland <- land_cover$arable + land_cover$grassland
+# land_cover$arable_forest <- land_cover$arable + land_cover$forest
 
 # combine land use and heterozygosity dataframes
 ind_hz_land <- merge(hz, land_cover, by = "site")
@@ -34,9 +34,13 @@ results <- data.frame()
 
 # set landscapes of interest
 landscapes <- c(
-  "arable", "grassland", "forest", "water", "arable_grassland",
-  "arable_forest", "grassland_forest"
+  "arable", "grassland", "forest", "water"
 )
+
+# landscapes <- c(
+#   "arable", "grassland", "forest", "water", "arable_grassland",
+#   "arable_forest", "grassland_forest"
+# )
 
 # generate models of heterozygosity ~ landuse for each radii
 for (r in buffer_radius) {
@@ -48,19 +52,19 @@ for (r in buffer_radius) {
         data = ind_hz_land[ind_hz_land$radius == r, ]
       )
       summ <- summary(model)
-      aic <- summ$AIC
+      aicc <- AICc(model)
       tval <- summ$coefficients[6]
       pval <- Anova(model)[[3]][1]
       r2m <- r.squaredGLMM(model)[1]
       r2c <- r.squaredGLMM(model)[2]
-      row <- c(dataset, r, m, tval, pval, r2m, r2c, aic)
+      row <- c(dataset, r, m, tval, pval, r2m, r2c, aicc)
       results <- rbind(results, row)
     }
   }
 }
 
 colnames(results) <- c("dataset", "radius", "landuse", "t-val", "p-val", "r2m",
-                       "r2c", "aic")
+                       "r2c", "aicc")
 
 # write results to output table
 write.table(

@@ -23,15 +23,20 @@ fst$combname <- paste0(fst$pop1,"-",fst$pop2)
 
 # merge fst and land cover matrices and create combined land categories
 fstland <- merge(fst, land_cover, by = "combname")
-fstland$grassland_forest <- fstland$grassland + fstland$forest
-fstland$arable_grassland <- fstland$arable + fstland$grassland
-fstland$arable_forest <- fstland$arable + fstland$forest
+# fstland$grassland_forest <- fstland$grassland + fstland$forest
+# fstland$arable_grassland <- fstland$arable + fstland$grassland
+# fstland$arable_forest <- fstland$arable + fstland$forest
 
 # define landscapes to test
 landscapes <- c(
-  "arable", "grassland", "forest", "water", "arable_grassland",
-  "arable_forest", "grassland_forest"
+  "arable", "grassland", "forest", "water"
 )
+
+
+# landscapes <- c(
+#   "arable", "grassland", "forest", "water", "arable_grassland",
+#   "arable_forest", "grassland_forest"
+# )
 
 # create membership matrix for multi membership random effect
 wt <- weights_from_columns(fstland[, c("pop1.x", "pop2.x")])
@@ -55,21 +60,21 @@ for (m in c("distance", landscapes)) {
       data = fstland
     )
     summ <- summary(model)
-    aic <- AIC(model)
+    aicc <- AICc(model)
     r2m <- r.squaredGLMM(model)[1]
     r2c <- r.squaredGLMM(model)[2]
     if (m == "distance") {
       pval <- Anova(model)[[3]][1]
-      row <- c(dataset, m, summ$coefficients[6], pval, r2m, r2c, aic)
+      row <- c(dataset, m, summ$coefficients[6], pval, r2m, r2c, aicc)
     } else {
       pval <- Anova(model)[[3]][2]
-      row <- c(dataset, m, summ$coefficients[9], pval, r2m, r2c, aic)
+      row <- c(dataset, m, summ$coefficients[9], pval, r2m, r2c, aicc)
     }
     results <- rbind(results, row)
   }
 }
 
-colnames(results) <- c("dataset", "landuse", "t-val", "p-val", "r2m", "r2c", "aic")
+colnames(results) <- c("dataset", "landuse", "t-val", "p-val", "r2m", "r2c", "aicc")
 
 write.table(
   results,
