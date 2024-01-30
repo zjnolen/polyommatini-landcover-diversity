@@ -19,8 +19,8 @@ Main:
 Supplementary:
 
 - Figure S1: Created with QGIS
-- Figures S2-5: [`supp_diversity.R`](supp_diversity.R)
-- Figure S6-7: [`supp_admix.R`](supp_admix.R)
-- Figure S8: Created with QGIS
-- Figure S9-10: [`inbreeding_plots.R`](inbreeding_plots.R)
-- Figure S11: [`landscape_diversity.R`](landscape_diversity.R)
+- Figure S2: [`landscape_diversity.R`](landscape_diversity.R)
+- Figures S3-6: [`supp_diversity.R`](supp_diversity.R)
+- Figure S7-8: [`supp_admix.R`](supp_admix.R)
+- Figure S9: Created with QGIS
+- Figure S10-11: [`inbreeding_plots.R`](inbreeding_plots.R)
