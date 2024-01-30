@@ -1,7 +1,7 @@
 # Polyommatini Landscape Genomics
 
 This repository contains the scripts utilized for processing the data in our
-manuscript focusing on the effects of land use on genetic diversity and
+manuscript focusing on the effects of land cover on genetic diversity and
 differentiation in three blue-wing butterfly species.
 
 All of the analyses were performed using a Snakemake based workflow, and can
@@ -29,11 +29,14 @@ the [main repository for that](https://www.github.com/zjnolen/angsd-snakemake-pi
 ## Reproducing our analyses
 
 To reproduce our analyses for one of the species, you will first need to
-[install Snakemake to your system](https://snakemake.readthedocs.io/en/stable/getting_started/installation.html),
-then clone this repository to your machine:
+[install Snakemake to your system](https://snakemake.readthedocs.io/en/stable/getting_started/installation.html).
+We ran this workflow on Snakemake v7.32.4, but it should work on the most
+current version as of this writing (v8.4.1).
+
+Once Snakemake is installed and active, clone this repository to your machine:
 
 ```bash
-git clone
+git clone https://github.com/zjnolen/polyommatini-landcover-diversity.git
 ```
 
 Download the raw data from NCBI, and change the paths in [`config/units.tsv`](config/units.tsv)
