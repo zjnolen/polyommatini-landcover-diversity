@@ -22,12 +22,10 @@ results <- rbind(picarus, pargus, csemiargus)
 results$landuse <- factor(
   results$landuse,
   levels = c(
-    "distance", "grassland", "arable", "forest", "grassland_forest",
-    "arable_grassland", "arable_forest", "water"
+    "distance", "grassland", "arable", "forest", "water"
   ),
   labels = c(
-    "Distance", "+ Grassland", "+ Arable", "+ Forest", "+ Grassland & Forest",
-    "+ Arable & Grassland", "+ Arable & Forest", "+ Water"
+    "Distance", "+ Grassland", "+ Arable", "+ Forest", "+ Water"
   )
 )
 
@@ -41,7 +39,7 @@ results$species <- factor(
 results$neg <- as.numeric(with(results, ifelse(t.val < 0, -1, 1)))
 results <- results %>%
   group_by(dataset) %>%
-  mutate(deltaAIC = aic - min(aic))
+  mutate(deltaAIC = aicc - min(aicc))
 
 # Plot land use relationships with genetic differentaiton per species
 

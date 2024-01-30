@@ -21,18 +21,16 @@ results <- rbind(picarus, pargus, csemiargus)
 
 results$radius <- factor(
   results$radius,
-  levels = as.character(c(100, 500, 1000, 1500, 2000, 3000, 4000, 5000, 6000,
+  levels = as.character(c(500, 1000, 1500, 2000, 3000, 4000, 5000, 6000,
                           8000, 10000, 15000, 20000))
 )
 results$landuse <- factor(
   results$landuse,
   levels = rev(c(
-    "grassland", "arable", "forest", "grassland_forest",
-    "arable_grassland", "arable_forest", "water"
+    "grassland", "arable", "forest", "water"
   )),
   labels = rev(c(
-    "Grassland", "Arable", "Forest", "Grassland & Forest",
-    "Arable & Grassland", "Arable & Forest", "Water"
+    "Grassland", "Arable", "Forest", "Water"
   ))
 )
 results$species <- factor(
@@ -45,7 +43,7 @@ results$species <- factor(
 results$neg <- as.numeric(with(results, ifelse(t.val < 0, -1, 1)))
 results <- results %>%
   group_by(radius, species) %>%
-  mutate(deltaAIC = aic - min(aic))
+  mutate(deltaAIC = aicc - min(aicc))
 
 # Plot results from landscape models
 
@@ -76,37 +74,67 @@ ggplot(
   ) +
   xlab("Radius [m]")
 
-ggsave("results/figures/landscape_diversity.svg", width = 5, height = 5)
+ggsave("results/figures/landscape_diversity.svg", width = 4.5, height = 5)
 
 # Assess correlations between land use variables at multiple scales
 
+
 landuse <- read.table("results/landscape/around_site_cover.tsv", header = TRUE)
 
-correlations <- c()
+corr <- c()
 
-for (r in unique(landuse$radius)) {
-  radius <- landuse[landuse$radius == r, ]
-  grassarable <- cor(radius$grassland, radius$arable, method = "pearson")
-  grassforest <- cor(radius$grassland, radius$forest, method = "pearson")
-  arableforest <- cor(radius$arable, radius$forest, method = "pearson")
-  watergrass <- cor(radius$water, radius$grass, method = "pearson")
-  waterforest <- cor(radius$water, radius$forest, method = "pearson")
-  waterarable <- cor(radius$water, radius$arable, method = "pearson")
-  row <- data.frame(r, grassarable, grassforest, arableforest, watergrass, waterforest, waterarable)
-  correlations <- rbind(row, correlations)
+for (s in c("picarus", "pargus", "csemiargus")) {
+  
+  samples <- read.table(paste0("config/samples_",s,".tsv"), header = TRUE)
+  pops <- unique(samples$population)
+  
+  species_landuse <- landuse[landuse$site %in% pops, ]
+  
+  correlations <- c()
+  
+  for (r in unique(species_landuse$radius)) {
+    radius <- species_landuse[species_landuse$radius == r, ]
+    grassarable <- cor(radius$grassland, radius$arable, method = "pearson")
+    grassforest <- cor(radius$grassland, radius$forest, method = "pearson")
+    arableforest <- cor(radius$arable, radius$forest, method = "pearson")
+    watergrass <- cor(radius$water, radius$grass, method = "pearson")
+    waterforest <- cor(radius$water, radius$forest, method = "pearson")
+    waterarable <- cor(radius$water, radius$arable, method = "pearson")
+    row <- data.frame(r, grassarable, grassforest, arableforest, watergrass, waterforest, waterarable)
+    correlations <- rbind(row, correlations)
+  }
+  
+  correlations <- melt(correlations, id = "r")
+  correlations$variable <- factor(correlations$variable, levels = c("grassarable","grassforest","arableforest","watergrass","waterforest","waterarable"), labels = c("Grass:Arable", "Grass:Forest", "Arable:Forest", "Water:Grass","Water:Forest","Water:Arable"))
+  
+  correlations$species <- s
+  corr <- rbind(corr, correlations)
 }
 
-correlations <- melt(correlations, id = "r")
-correlations$variable <- factor(correlations$variable, levels = c("grassarable","grassforest","arableforest","watergrass","waterforest","waterarable"), labels = c("Grass:Arable", "Grass:Forest", "Arable:Forest", "Water:Grass","Water:Forest","Water:Arable"))
+
+corr$species <- factor(
+  corr$species,
+  levels = c("picarus", "pargus", "csemiargus"),
+  labels = c("P. icarus", "P. argus", "C. semiargus")
+)
 
 # Plot correlations
 
-ggplot(correlations, aes(x = r, y = value, shape = variable, linetype = variable)) +
+ggplot(corr, aes(x = r, y = value, shape = variable, linetype = variable)) +
+  facet_wrap( ~ species) +
   geom_point() +
   geom_line() +
   geom_hline(yintercept = 0) +
   ylab("Pearson correlation, r") +
-  xlab("Radius (m)")
-
-
-ggsave("results/figures/landscape_correlation.svg", width = 6, height = 5)
+  xlab("Radius (m)") +
+  theme_bw() +
+  theme(
+    axis.text.y = element_text(angle = 0),
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    strip.text = element_text(face = "italic", size = 13),
+    legend.title = element_blank()
+  )
+  
+  
+ggsave("results/figures/landscape_correlation.svg", width = 12, height = 5)
+  
