@@ -7,25 +7,25 @@ downsample_reps: [100]
 downsample:
   fst: true
   thetas: true
-recrate: 2.76e-8
+recrate: 2.33e-8
 
 # ANGSD Snakemake Pipeline Config
 
 #=====================Dataset Configuration============================#
 
-samples: config/samples_csemiargus.tsv
+samples: config/samples_picarus.tsv
 
 units: config/units.tsv
 
-dataset: "landuse-csemiargus"
+dataset: "landuse-picarus"
 
 #===================== Reference Configuration ========================#
 
-chunk_size: 30000000
+chunk_size: 40000000
 
 reference:
-  name: "ilCyaSemi1.1"
-  fasta: "resources/ref/GCA_905187585.1_ilCyaSemi1.1_genomic.fna"
+  name: "ilPolIcar1.1"
+  fasta: "resources/ref/GCA_937595015.1_ilPolIcar1.1_genomic.fna"
   mito: ["mitochondrion"]
   sex-linked: ["Z"]
   exclude: []
@@ -35,7 +35,7 @@ reference:
 
 exclude_ind: []
 
-excl_pca-admix: ["CYSE0227", "CYSE0464", "CYSE0225", "MZLU107455", "CYSE0078", "MZLU107501", "CYSE0198", "MZLU107464"]
+excl_pca-admix: ["POIC0314", "PI107", "POIC0318", "POIC0924", "POIC0313", "POIC0316", "PI033"]
 
 #==================== Downsampling Configuration ======================#
 
@@ -49,7 +49,7 @@ analyses:
   # filtering
   genmap: true
   repeatmasker:
-    local_lib: "resources/repeatlibs/GCA_905187585.1.repeatmodeler.fa"
+    local_lib: "resources/repeatlibs/GCA_937595015.1.repeatmodeler.fa"
     dfam_lib:
     build_lib:
   extreme_depth: [0.5, 1.5]
@@ -129,6 +129,6 @@ params:
     minreps: 20
     thresh:
     conv:
-    extra: "-maxiter 4000"
+    extra: "-maxiter 6000"
   ibs:
     doibs: 2
