@@ -1,4 +1,10 @@
+# These rules are used to perform the models examining genetic diversity and
+# differentiation responses to land cover
+
 rule around_site_cover:
+    """
+    Calculate land cover proportions in radii around all sample sites.
+    """
     input:
         raster=config["landuse-raster"],
         sites=config["field-sites"],
@@ -21,6 +27,9 @@ localrules:
 
 
 rule diversity_landscape_modeling:
+    """
+    Fit models with genetic diversity as a response to land cover.
+    """
     input:
         cover="results/landscape/around_site_cover.tsv",
         hz="results/datasets/{dataset}/analyses/heterozygosity/{dataset}.{ref}_all_{sites}-filts_heterozygosity.tsv",
@@ -36,6 +45,9 @@ rule diversity_landscape_modeling:
 
 
 rule between_site_cover:
+    """
+    Calculate land cover proportions between all pairs of sample sites.
+    """
     input:
         raster=config["landuse-raster"],
         sites=config["field-sites"],
@@ -56,6 +68,9 @@ rule between_site_cover:
 
 
 rule differentiation_landscape_modeling:
+    """
+    Fit models with genetic differentiation as a response to land cover.
+    """
     input:
         cover="results/landscape/{dataset}_between_site_cover.tsv",
         fst="results/datasets/{dataset}/analyses/fst/{dataset}.{ref}_poppairs_{sites}-filts.fst.global.tsv",

@@ -1,8 +1,15 @@
+# These rules downsample the various diversity statistics used to lower sample
+# sizes to assess how small a sample size can approach the full sample size.
+
 localrules:
     downsample_bamlist,
 
 
 rule downsample_bamlist:
+    """
+    Generate downsampled lists of bam files, these will be used as input to
+    ANGSD to calculate diversity statistics for downsampled replicates.
+    """
     input:
         bamlist="results/datasets/{dataset}/bamlists/{dataset}.{ref}_{population}.bamlist",
         bams=angsd.get_bamlist_bams,
@@ -26,6 +33,9 @@ rule downsample_bamlist:
 
 
 rule downsample_thetas:
+    """
+    Estimate pi, theta, and Tajima's D using ANGSD on the downsampled bam lists.
+    """
     input:
         sublist="results/datasets/{dataset}/bamlists/downsampled/{dataset}.{ref}_{population}.N{samplesize}-rep{rep}_{sites}-filts.bamlist",
         ref="results/ref/{ref}/{ref}.fa",
@@ -76,6 +86,10 @@ rule downsample_thetas:
 
 
 rule average_downsampled_thetas:
+    """
+    Get a mean estimate for each downsampled pi, theta, and Tajima's D from the
+    sliding window estimates.
+    """
     input:
         "results/datasets/{dataset}/analyses/thetas/downsampled/{dataset}.{ref}_{population}.N{samplesize}-rep{rep}_{sites}-filts.thetaWindows.{win}_{step}.pestPG",
     output:
@@ -95,6 +109,10 @@ rule average_downsampled_thetas:
 
 
 rule aggregate_downsampled_thetas:
+    """
+    Compile downsampled mean pi, theta and Tajima's D into a table with all
+    downsampled replicates.
+    """
     input:
         expand(
             "results/datasets/{{dataset}}/analyses/thetas/downsampled/{{dataset}}.{{ref}}_{population}.N{samplesize}-rep{rep}_{{sites}}-filts.thetaMean.{{win}}_{{step}}.tsv",
@@ -118,6 +136,9 @@ rule aggregate_downsampled_thetas:
 
 
 rule downsample_fst:
+    """
+    Estimate Fst using ANGSD with the downsampled bam lists.
+    """
     input:
         sublist1="results/datasets/{dataset}/bamlists/downsampled/{dataset}.{ref}_{population1}.N{samplesize}-rep{rep}_{sites}-filts.bamlist",
         sublist2="results/datasets/{dataset}/bamlists/downsampled/{dataset}.{ref}_{population2}.N{samplesize}-rep{rep}_{sites}-filts.bamlist",
@@ -207,6 +228,9 @@ def get_downsample_fst(wildcards):
 
 
 rule aggregate_downsample_fst:
+    """
+    Aggregate downsampled global Fst estimates into a single table.
+    """
     input:
         get_downsample_fst,
     output:

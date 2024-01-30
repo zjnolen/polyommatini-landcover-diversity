@@ -20,12 +20,9 @@ buffer_radius <- c(
   500, 1000, 1500, 2000, 3000, 4000, 5000, 6000, 8000, 10000, 15000, 20000
 )
 
-# generate additional land use combination proportions
+# clean up column names to match land_cover table
 hz$dataset <- snakemake@wildcards[["dataset"]]
 colnames(hz) <- c("sample", "site", "heterozygosity", "dataset")
-# land_cover$grassland_forest <- land_cover$grassland + land_cover$forest
-# land_cover$arable_grassland <- land_cover$arable + land_cover$grassland
-# land_cover$arable_forest <- land_cover$arable + land_cover$forest
 
 # combine land use and heterozygosity dataframes
 ind_hz_land <- merge(hz, land_cover, by = "site")
@@ -36,11 +33,6 @@ results <- data.frame()
 landscapes <- c(
   "arable", "grassland", "forest", "water"
 )
-
-# landscapes <- c(
-#   "arable", "grassland", "forest", "water", "arable_grassland",
-#   "arable_forest", "grassland_forest"
-# )
 
 # generate models of heterozygosity ~ landuse for each radii
 for (r in buffer_radius) {

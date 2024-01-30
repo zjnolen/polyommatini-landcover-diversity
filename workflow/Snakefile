@@ -3,6 +3,9 @@ import math
 
 min_version("7.25")
 
+# This is the main Snakefile for the workflow. It compiles the output files
+# required by the workflow. The rules used to produce the outputs are found
+# in the included .smk files below:
 
 include: "rules/0.0_angsd_pipeline.smk"
 include: "rules/1.0_landscape_modeling.smk"

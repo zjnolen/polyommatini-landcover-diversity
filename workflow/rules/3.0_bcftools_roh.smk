@@ -6,6 +6,11 @@ localrules:
 
 
 rule angsd_doBcf_likes:
+    """
+    Generate per population BCF files from ANGSD containing the same genotype
+    likelihoods as used in the other GL analyses, but setting a more stringer
+    per sample depth filter (>=10).
+    """
     input:
         bam="results/datasets/{dataset}/bamlists/{dataset}.{ref}_{population}{dp}.bamlist",
         bams=angsd.get_bamlist_bams,
@@ -55,6 +60,9 @@ rule angsd_doBcf_likes:
 
 
 rule concat_bcf:
+    """
+    Combine chromosome group GL BCFs into a full genome BCF.
+    """
     input:
         calls=lambda w: expand(
             "results/datasets/{{dataset}}/bcfs/chunks/{{dataset}}.{{ref}}_{{population}}{{dp}}_chunk{chunk}_{{sites}}-filts.GLonly.bcf",
@@ -82,6 +90,10 @@ rule concat_bcf:
 
 
 rule bcftools_roh_likes:
+    """
+    Estimate runs of homozygosity with BCFtools using the genotype likelihoods
+    as input. Use allele frequencies from ANGSD (in BCF).
+    """
     input:
         "results/datasets/{dataset}/bcfs/{dataset}.{ref}_{population}{dp}_{sites}-filts.GLonly.bcf",
     output:
@@ -107,6 +119,10 @@ rule bcftools_roh_likes:
 
 
 rule bcftools_list:
+    """
+    Create BED file of chromosome groups to partition variant calling in
+    BCFtools with.
+    """
     input:
         bed="results/datasets/{dataset}/filters/combined/{dataset}.{ref}_{sites}-filts.bed",
         reg="results/datasets/{dataset}/filters/chunks/{ref}_chunk{chunk}.rf",
@@ -125,6 +141,9 @@ rule bcftools_list:
 
 
 rule bcftools_mpileup_call:
+    """
+    Call variants per population, calling genotypes.
+    """
     input:
         alignments=lambda w: expand(
             "results/datasets/{{dataset}}/bams/{sample}.{{ref}}.bam",
@@ -156,6 +175,10 @@ rule bcftools_mpileup_call:
 
 
 rule bcf_filter:
+    """
+    Filter called genotypes to exclude genotypes with < 30 genotype quality and
+    depth < 10.
+    """
     input:
         "results/datasets/{dataset}/bcfs/chunks/{dataset}.{ref}_{population}_chunk{chunk}_{sites}-filts.bcf",
     output:
@@ -173,6 +196,10 @@ rule bcf_filter:
 
 
 rule bcf_concat:
+    """
+    Combine per chromosome group BCFs for called genotypes into a full genome
+    VCF for each population.
+    """
     input:
         expand(
             "results/datasets/{{dataset}}/vcfs/chunks/{{dataset}}.{{ref}}_{{population}}_chunk{chunk}_{{sites}}-filts.filter.vcf.gz",
@@ -193,6 +220,10 @@ rule bcf_concat:
 
 
 rule bcftools_roh_calls:
+    """
+    Estimate runs of homozygosity with BCFtools using the genotype calls as
+    input. Calculate allele-frequencies from genotype calls.
+    """
     input:
         "results/datasets/{dataset}/vcfs/{dataset}.{ref}_{population}{dp}_{sites}-filts.filter.vcf.gz",
     output:
@@ -218,6 +249,9 @@ rule bcftools_roh_calls:
 
 
 rule combine_roh:
+    """
+    Merge runs of homozygosity estimates for both genotype likelihoods and calls.
+    """
     input:
         expand(
             "results/datasets/{{dataset}}/analyses/roh/bcftools/{{dataset}}.{{ref}}_{population}{{dp}}_{{sites}}-filts.regs.{{type}}.roh",

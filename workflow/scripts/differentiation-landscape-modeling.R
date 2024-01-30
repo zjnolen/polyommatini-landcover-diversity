@@ -21,22 +21,13 @@ land_cover$combname <- ifelse(
 fst$combname <- paste0(fst$pop1,"-",fst$pop2)
 
 
-# merge fst and land cover matrices and create combined land categories
+# merge fst and land cover matrices
 fstland <- merge(fst, land_cover, by = "combname")
-# fstland$grassland_forest <- fstland$grassland + fstland$forest
-# fstland$arable_grassland <- fstland$arable + fstland$grassland
-# fstland$arable_forest <- fstland$arable + fstland$forest
 
 # define landscapes to test
 landscapes <- c(
   "arable", "grassland", "forest", "water"
 )
-
-
-# landscapes <- c(
-#   "arable", "grassland", "forest", "water", "arable_grassland",
-#   "arable_forest", "grassland_forest"
-# )
 
 # create membership matrix for multi membership random effect
 wt <- weights_from_columns(fstland[, c("pop1.x", "pop2.x")])

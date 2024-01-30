@@ -1,5 +1,6 @@
 sink(file(snakemake@log[[1]], open = "wt"), type = "message")
 
+# Function that averages thetas across windows from sliding window output.
 average_pestpg <- function(pestpg, popname, subsize, rep, minsites) {
   theta <- as.data.frame(read.table(pestpg, header = TRUE, comment.char = ""))
   theta <- theta[!theta$nSites < minsites, ]
@@ -17,6 +18,7 @@ average_pestpg <- function(pestpg, popname, subsize, rep, minsites) {
   )
 }
 
+# averaging for input files
 avg <- average_pestpg(
   snakemake@input[[1]],
   snakemake@wildcards[["population"]],
@@ -25,6 +27,7 @@ avg <- average_pestpg(
   snakemake@params[["minsites"]]
 )
 
+# Write averages to file.
 write.table(
   avg,
   file = snakemake@output[[1]],

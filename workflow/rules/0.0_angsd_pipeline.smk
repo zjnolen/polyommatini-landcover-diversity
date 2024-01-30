@@ -1,3 +1,5 @@
+# This section loads the main ANGSD pipeline used for most analyses
+
 module angsd:
     snakefile:
         github(
