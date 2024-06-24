@@ -52,7 +52,7 @@ ggplot(
   aes(x = radius, y = landuse, col = neg, size = r2m,
     label = round(deltaAIC, 2))) +
   geom_point(alpha = ifelse(results$deltaAIC == 0, 0.9, 0.5)) +
-  geom_point(stroke = ifelse(results$deltaAIC < 2, 1, 0), shape = 1, col = ifelse(results$deltaAIC == 0, "black", "grey40"), alpha = 1) +
+  geom_point(stroke = ifelse(results$deltaAIC < 2, 1.25, 0), shape = 1, col = ifelse(results$deltaAIC == 0, "black", "grey40"), alpha = 1) +
   facet_grid(rows = vars(species), switch = "y") +
   scale_color_gradientn(colors = rev(c("#15607A", "#A63716"))) +
   scale_y_discrete(position = "right") +
@@ -79,7 +79,7 @@ ggsave("results/figures/landscape_diversity.svg", width = 4.5, height = 5)
 # Assess correlations between land use variables at multiple scales
 
 
-landuse <- read.table("results/landscape/around_site_cover.tsv", header = TRUE)
+landuse <- read.table("results/landscape/around_site_cover_tuva.tsv", header = TRUE)
 
 corr <- c()
 
@@ -94,18 +94,19 @@ for (s in c("picarus", "pargus", "csemiargus")) {
   
   for (r in unique(species_landuse$radius)) {
     radius <- species_landuse[species_landuse$radius == r, ]
+    grasstuva <- cor(radius$grassland, radius$sng, method = "pearson")
     grassarable <- cor(radius$grassland, radius$arable, method = "pearson")
     grassforest <- cor(radius$grassland, radius$forest, method = "pearson")
     arableforest <- cor(radius$arable, radius$forest, method = "pearson")
     watergrass <- cor(radius$water, radius$grass, method = "pearson")
     waterforest <- cor(radius$water, radius$forest, method = "pearson")
     waterarable <- cor(radius$water, radius$arable, method = "pearson")
-    row <- data.frame(r, grassarable, grassforest, arableforest, watergrass, waterforest, waterarable)
+    row <- data.frame(r, grasstuva, grassarable, grassforest, arableforest, watergrass, waterforest, waterarable)
     correlations <- rbind(row, correlations)
   }
   
   correlations <- melt(correlations, id = "r")
-  correlations$variable <- factor(correlations$variable, levels = c("grassarable","grassforest","arableforest","watergrass","waterforest","waterarable"), labels = c("Grass:Arable", "Grass:Forest", "Arable:Forest", "Water:Grass","Water:Forest","Water:Arable"))
+  correlations$variable <- factor(correlations$variable, levels = c("grasstuva", "grassarable","grassforest","arableforest","watergrass","waterforest","waterarable"), labels = c("Grass:TUVA", "Grass:Arable", "Grass:Forest", "Arable:Forest", "Water:Grass","Water:Forest","Water:Arable"))
   
   correlations$species <- s
   corr <- rbind(corr, correlations)
