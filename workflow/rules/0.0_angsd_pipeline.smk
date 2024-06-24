@@ -3,7 +3,7 @@
 module angsd:
     snakefile:
         github(
-            "zjnolen/angsd-snakemake-pipeline", path="workflow/Snakefile", tag="v0.2.0"
+            "zjnolen/PopGLen", path="workflow/Snakefile", tag="v0.2.0"
         )
     config:
         config
