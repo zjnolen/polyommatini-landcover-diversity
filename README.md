@@ -1,5 +1,7 @@
 # Polyommatini Landscape Genomics
 
+[![DOI](https://zenodo.org/badge/750364620.svg)](https://zenodo.org/doi/10.5281/zenodo.13383388)
+
 This repository contains the scripts utilized for processing the data in our
 manuscript focusing on the effects of land cover on genetic diversity and
 differentiation in three blue-wing butterfly species:
